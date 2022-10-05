@@ -1,0 +1,55 @@
+cwbase
+{
+  id:'',
+  basename:'',
+  adminname:'',
+  address:'',
+  intro:'',
+  img:'',
+  cwArr:[
+    {cw}
+  ],
+  notuse:number,
+
+}
+Wechat Moments
+{
+  {
+    name:'',
+    data:'',
+    content:'',
+    
+  }
+}
+avatar
+{
+  id:string,
+  name:'',
+  state:boolean //是否在线，
+  frindes:['id','']
+  banliao:{
+    user1:{
+      id:''
+      message:[
+    {
+      frind:'',
+      message:'',
+      date:''
+    },
+    {
+      frind:'',
+      message:''
+    },
+    {
+      frind:'',
+      message:''
+    }
+  ]
+    },
+    user2:{
+
+    }
+
+    
+  }
+}
