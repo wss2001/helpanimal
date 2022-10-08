@@ -150,7 +150,7 @@ router.post('/addjpg', multer({
   fileInfo.name = file.originalname;
   fileInfo.size = file.size;
   fileInfo.path = path;
-  fileInfo.url = `http://localhost:3009/${path}`
+  fileInfo.url = `http://localhost:3007/${path}`
   // console.log(fileInfo)
   res.json({
     code: 0,
@@ -176,6 +176,44 @@ router.post('/uploadtx', urlencodedParser, (req, res) => {
       })
     }
   })
+})
+//转让宠物
+router.post('/changepet',urlencodedParser,async (req,res)=>{
+  let {id,myId} = req.body.form
+  try {
+    let result = await new Promise((resolve, reject) => {
+      user.findById(myId, (err, date) => {
+        if (err) reject(err)
+        resolve(date)
+      })
+    })
+    let beforeCwArr = result[0].cw.filter((item,index)=>item!==id)
+    user.updateById(myId,{cw:beforeCwArr},(err,data)=>{
+      if(err){
+        res.cc(err)
+      }
+    })
+  } catch (error) {
+    res.cc(error)
+  }
+  try {
+    let cc = await new Promise((resolve, reject) => {
+      cw.updateById(id,{state:false},(err,data)=>{
+        if(err) reject(err)
+        else{
+          resolve(data)
+        }
+      })
+    })
+    res.send({
+      code:'ok',
+      status:0,
+      data:cc,
+      message:'成功将宠物转让回宠物基地'
+    })
+  } catch (error) {
+    res.cc(error)
+  }
 })
 
 module.exports = router
