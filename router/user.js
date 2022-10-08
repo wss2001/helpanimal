@@ -29,7 +29,7 @@ router.post('/login', urlencodedParser, (req, res) => {
       res.cc('手机号密码错误,请重新输入')
     } else {
       // 登陆成功给权限
-      console.log(date[0]._id.toString());
+      // console.log(date[0]._id.toString());
       res.cookie('userToken', date[0]._id.toString(), {
         expires: new Date(Date.now() + 900000)
       })
@@ -103,7 +103,7 @@ router.get('/getUserInfo', (req, res) => {
 })
 
 // 注册
-router.post('/userRegister', urlencodedParser, (req, res) => {
+router.post('/register', urlencodedParser, (req, res) => {
   let cw = []
   let {
     pass,
@@ -115,12 +115,16 @@ router.post('/userRegister', urlencodedParser, (req, res) => {
     phoneNumber,
     username,
     info: {},
+    img:'http://localhost:3007/public/img/cw1.jpg',
     cw: cw
   }], (err, date) => {
     if (err) {
       res.cc('发生错误')
       return
     } else {
+      res.cookie('userToken', date.insertedIds[0].toString(), {
+        expires: new Date(Date.now() + 9000000)
+      })
       res.send({
         code: 'ok',
         status: 0,

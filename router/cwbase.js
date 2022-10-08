@@ -58,5 +58,35 @@ router.get('/getCwBaseInfo', async (req, res) => {
   })
 })
 
+router.post('/login', urlencodedParser, (req, res) => {
+  let {
+    password,
+    phoneNumber
+  } = req.body.form
+  // console.log(password,phoneNumber);
+  cwBasePeople.find({
+    phoneNumber: phoneNumber,
+    password: password
+  }, (err, date) => {
+    if (err) {
+      res.cc(err)
+    }
+    if (date.length == 0) {
+      res.status(404).send(`账号密码错误,请重新输入`)
+    } else {
+      // 登陆成功给权限
+      res.cookie('cwBaseAdminToken', cwBaseAdminToken.getToken(), {
+        expires: new Date(Date.now() + 9000000)
+      })
+      res.send({
+        code: 'ok',
+        status: 0,
+        message: '获取宠物基地管理数据成功！',
+        data: date,
+      })
+    }
+  })
+})
+
 //这里得这么导出
 module.exports = router
