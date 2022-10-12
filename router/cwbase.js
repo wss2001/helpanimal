@@ -4,11 +4,17 @@ const bodyParser = require('body-parser')
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
-
+const {
+  getUserCwArr,
+  getBaseCwArr,
+  addcw,
+  updatebasecwarr
+} = require('../router/handle')
 const mongoControl = require('../dbc').mongoControl
 // 领养者
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
+var user = new mongoControl('animal', 'user')
 router.get('/getbase', (req, res) => {
   cwBase.find({}, (err, data) => {
     if (err) return res.cc(err)
@@ -39,22 +45,27 @@ router.get('/getCwBaseInfo', async (req, res) => {
   }
 
   let cwArr = cc[0].baseCw
-  let lastArr = []
-  for (let i = 0; i < cwArr.length; i++) {
-    let result = await new Promise((resolve, reject) => {
-      cw.findById(cwArr[i], (err, date) => {
+  
+  // 并发读取远程URL
+  const textPromises = cwArr.map(async item => {
+    const response = await new Promise((resolve, reject) => {
+      cw.findById(item, (err, date) => {
         if (err) reject(err)
         resolve(date)
       })
     })
-    lastArr.push(result[0])
+    return response;
+  });
+  let b = []
+  for (const textPromise of textPromises) {
+    let a = await textPromise
+    b.push(a[0])
   }
-  // console.log(lastArr);
   res.send({
     code: 'ok',
     status: 0,
     message: '获取宠物基地详细数据成功！',
-    data: lastArr,
+    data: b,
   })
 })
 
@@ -63,19 +74,18 @@ router.post('/login', urlencodedParser, (req, res) => {
     password,
     phoneNumber
   } = req.body.form
-  // console.log(password,phoneNumber);
-  cwBasePeople.find({
+  cwBase.find({
     phoneNumber: phoneNumber,
-    password: password
+    pass: password
   }, (err, date) => {
     if (err) {
       res.cc(err)
     }
     if (date.length == 0) {
-      res.status(404).send(`账号密码错误,请重新输入`)
+      res.cc(`账号密码错误,请重新输入`)
     } else {
       // 登陆成功给权限
-      res.cookie('cwBaseAdminToken', cwBaseAdminToken.getToken(), {
+      res.cookie('cwBaseAdminToken', date[0]._id.toString(), {
         expires: new Date(Date.now() + 9000000)
       })
       res.send({
@@ -83,6 +93,132 @@ router.post('/login', urlencodedParser, (req, res) => {
         status: 0,
         message: '获取宠物基地管理数据成功！',
         data: date,
+      })
+    }
+  })
+})
+// 增加宠物
+router.post('/addpet', urlencodedParser, async (req, res) => {
+  let {
+    name,
+    intro,
+    img,
+    id
+  } = req.body.form
+  let cwPush = {
+    name,
+    intro,
+    lovePeople: '',
+    lovePeopleUserName: '',
+    state: false,
+    alsoFood: 0,
+    img: img,
+    imgArr: [img],
+    fid: id,
+    userid: '',
+  }
+  try {
+    let [cwId, cwArr] = await Promise.all([addcw(cwPush), getBaseCwArr(id)])
+    console.log(cwArr, cwId);
+    cwArr.push(cwId)
+    cwBase.updateById(id, {
+      baseCw: cwArr
+    }, (err, date) => {
+      if (err) {
+        res.cc(err)
+        console.log(err);
+      } else {
+        res.send({
+          code: 'add pet ok',
+          status: 1,
+          message: '新增宠物成功',
+          data: date
+        })
+      }
+    })
+  } catch (error) {
+    console.log('error', error)
+  }
+})
+
+// 删除宠物
+router.post('/removePet', urlencodedParser, async (req, res) => {
+  let {
+    cwId,
+    id
+  } = req.body
+  console.log(id, cwId);
+  cw.deleteById(cwId, (err, date) => {
+    if (err) {
+      res.cc(err)
+      console.log(err);
+    } else {
+      console.log('cw删除数据成功', cwId);
+    }
+  })
+  // const textPromises = urls.map(async url => {
+  //   const response = await fetch(url);
+  //   return response;
+  // });
+  // // 按次序输出
+  // for (const textPromise of textPromises) {
+  //   console.log(await textPromise);
+  // }
+  let cwArr = await new Promise((resolve, reject) => {
+    cwBase.findById(id, (err, date) => {
+      if (err) {
+        reject(err)
+        res.cc(err)
+      }
+      resolve(date[0].cwArr)
+    })
+  })
+
+  let userid = await new Promise((resolve, reject) => {
+    cw.findById(id, (err, date) => {
+      if (err) {
+        reject(err)
+        res.cc(err)
+      }
+      resolve(date[0].userid)
+    })
+  })
+
+  let userCwArr = await new Promise((resolve, reject) => {
+    user.findById(userid, (err, date) => {
+      if (err) {
+        reject(err)
+        res.cc(err)
+      }
+      resolve(date[0].cw)
+    })
+  })
+
+  let newUserCwArr = userCwArr.filter(item => item !== cwId)
+  let newCwArr = cwArr.filter(item => item !== cwId)
+  console.log(newCwArr);
+
+  await user.updateById(userid, {
+    cw: newUserCwArr
+  }, (err, date) => {
+    if (err) {
+      reject(err)
+    } else {
+      resolve('ok')
+    }
+  })
+  cwBase.updateById(id, {
+    cwArr: newCwArr
+  }, (err, date) => {
+    if (err) {
+      res.cc(err)
+      console.log(err);
+    } else {
+      res.send({
+        code: 'delete pet ok',
+        status: 1,
+        message: '删除宠物成功',
+        data: date
       })
     }
   })
