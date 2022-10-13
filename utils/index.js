@@ -1,3 +1,9 @@
+/**
+ * @description 通过前后俩个时间戳获取其中相差几天
+ * @param {*时间戳} startTime 
+ * @param {*时间戳} endTime 
+ * @returns 
+ */
 exports.calculateDiffTime = function(startTime,endTime){
   // let startTime = '1629100469000' //2021-08-16 17:51
   //     let endTime = '1876262719000' //2032-08-16 17:51
@@ -16,6 +22,12 @@ exports.calculateDiffTime = function(startTime,endTime){
       console.log(`相差${year}年${month}月${day}天${hour}小时${minute}分${second}秒`);
       return `${month}月${day}天`
 }
+/**
+ * 通过一个时间，和天数看俩个相加为多少
+ * @param {yyyy-mm-dd} date 
+ * @param {*string} days 
+ * @returns 返回相加后的时间yyyy-mm-dd格式
+ */
 exports.addDate = function(date, days) {
   var d = new Date(date);
   d.setDate(d.getDate() + days);
