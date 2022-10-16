@@ -10,6 +10,9 @@ var user = new mongoControl('animal', 'user')
  * @returns cw数组
  */
 exports.getUserCwArr = async (userid) => {
+  if(userid==''){
+    return []
+  }
   let result = await new Promise((resolve, reject) => {
     user.findById(userid, (err, date) => {
       if (err) reject(err)
@@ -40,13 +43,19 @@ exports.getBaseCwArr = async (baseid) => {
  * @returns 
  */
 exports.deleteCw = async (cwid) => {
-  let result = await new Promise((resolve, reject) => {
-    cw.deleteById(cwid, (err, date) => {
-      if (err) reject(err)
-      resolve(date)
+  try {
+    let result = await new Promise((resolve, reject) => {
+      cw.deleteById(cwid, (err, date) => {
+        if (err) reject(err)
+        resolve(date)
+      })
     })
-  })
-  return result
+    return result
+  } catch (error) {
+    console.log(error)
+    return '根据宠物id删除宠物失败'
+  }
+  
 }
 
 /**
@@ -55,15 +64,21 @@ exports.deleteCw = async (cwid) => {
  * @returns userid
  */
 exports.getUseridBycw = async (cwid) => {
-  let result = await new Promise((resolve, reject) => {
-    cw.findById(id, (err, date) => {
-      if (err) {
-        reject(err)
-      }
-      resolve(date[0].userid)
+  try {
+    let result = await new Promise((resolve, reject) => {
+      cw.findById(cwid, (err, date) => {
+        if (err) {
+          reject('通过宠物id获取用户id失败')
+        }
+        resolve(date[0].userid)
+      })
     })
-  })
-  return result
+    return result
+  } catch (error) {
+    console.log(error)
+    return '通过宠物id获取用户id失败'
+  }
+  
 }
 
 /**通过用户id更新用户宠物数组
@@ -73,15 +88,21 @@ exports.getUseridBycw = async (cwid) => {
  * @returns 
  */
 exports.updateusercwarr = async (userid, arr) => {
-  let result = await new Promise((resolve, reject) => {
-    user.updateById(userid,{cw:arr} ,(err, date) => {
-      if (err) {
-        reject(err)
-      }
-      resolve(date[0].userid)
+  try {
+    let result = await new Promise((resolve, reject) => {
+      user.updateById(userid,{cw:arr} ,(err, date) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(date[0].userid)
+      })
     })
-  })
-  return result
+    return result
+  } catch (error) {
+    console.log(error)
+    return '通过用户id更新用户宠物数组失败'
+  }
+  
 }
 /**
  * @description 通过基地id更新基地宠物数组

@@ -17,15 +17,20 @@ const mongoControl = require('../dbc').mongoControl
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var user = new mongoControl('animal', 'user')
+var admin = new mongoControl('animal', 'admin')
+
 router.get('/getbase', (req, res) => {
   cwBase.find({}, (err, data) => {
-    if (err) return res.cc(err)
-    res.send({
-      code: 'ok',
-      status: 0,
-      message: '获取宠物基地数据成功！',
-      data,
-    })
+    if (err) {
+      res.cc(err)
+    } else {
+      res.send({
+        code: 'ok',
+        status: 0,
+        message: '获取宠物基地数据成功！',
+        data,
+      })
+    }
   })
 })
 router.get('/getCwBaseInfo', async (req, res) => {
@@ -47,7 +52,9 @@ router.get('/getCwBaseInfo', async (req, res) => {
     let b = []
     for (const textPromise of textPromises) {
       let a = await textPromise
-      b.push(a[0])
+      if (a[0] !== null) {
+        b.push(a[0])
+      }
     }
     res.send({
       code: 'ok',
@@ -131,6 +138,7 @@ router.post('/addpet', urlencodedParser, async (req, res) => {
       }
     })
   } catch (error) {
+    res.cc('新增宠物失败')
     console.log('error', error)
   }
 })
@@ -148,24 +156,66 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
     // let result = await deleteCw(cwId)
     // let cwArr = await getBaseCwArr(baseid)
     // let userid = await getUseridBycw(cwId)
-
-    let userCwArr = await getUserCwArr(userid)
-    let newUserCwArr = userCwArr.filter(item => item !== cwId)
+    console.log(result, cwArr, userid)
+    console.log('=====')
     let newBaseCwArr = cwArr.filter(item => item !== cwId)
-    console.log(newCwArr);
-    let [a, b] = await Promise.all([updateusercwarr(userid, newUserCwArr), updatebasecwarr(baseid, newBaseCwArr)])
-    // await updateusercwarr(userid, newUserCwArr)
-    // await updatebasecwarr(baseid, newBaseCwArr)
-    res.send({
-      code: 'delete pet ok',
-      status: 1,
-      message: '删除宠物成功',
-      data: [result]
-    })
+    if (userid == '' || !userid) {
+      let a = await updatebasecwarr(baseid, newBaseCwArr)
+      res.send({
+        code: 'delete pet ok',
+        status: 1,
+        message: '删除宠物成功',
+        data: [result]
+      })
+    } else {
+      let userCwArr = await getUserCwArr(userid)
+      let newUserCwArr = userCwArr.filter(item => item !== cwId)
+
+      console.log(newBaseCwArr);
+      let [a, b] = await Promise.all([updateusercwarr(userid, newUserCwArr), updatebasecwarr(baseid, newBaseCwArr)])
+      res.send({
+        code: 'delete pet ok',
+        status: 1,
+        message: '删除宠物成功',
+        data: [result]
+      })
+    }
+
   } catch (error) {
     console.log(error)
     res.cc('删除宠物失败')
   }
+})
+
+//修改宠物信息
+router.post('/updatepet', urlencodedParser, (req, res) => {
+  let {
+    id
+  } = req.body.form
+
+})
+
+//宠物救助注册
+router.post('/register', urlencodedParser, (req, res) => {
+  let {
+    phoneNumber,
+    pass
+  } = req.body.form
+  admin.insert([{
+    code: 1,
+    phoneNumber,
+    pass
+  }], (err, date) => {
+    if (err) {
+      res.cc(err)
+    } else {
+      res.send({
+        code: 'ok',
+        data: '等待管理员与你确认核实后才能运行',
+        status: 1,
+      })
+    }
+  })
 })
 
 //这里得这么导出

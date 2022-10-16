@@ -8,8 +8,9 @@
 // }
 // test()
 // const mongoControl = require('./dbc').mongoControl
-// // 领养者
-// var cwBase = new mongoControl('animal', 'cwBase')
+// // // 领养者
+// var admin = new mongoControl('animal', 'admin')
+// admin.insert([{phoneNumber:123,pass:'123'}],()=>{console.log('p')})
 // let arr = [
 //   '627cb6800e9ad24c2b1f8bca',
 //   '629453ad462514287a542827',
