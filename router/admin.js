@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const bodyParser = require('body-parser')
+const {jiemi} = require('../utils/index')
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
@@ -11,10 +12,13 @@ var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var admin = new mongoControl('animal', 'admin')
 router.post('/login', urlencodedParser, (req, res) => {
+  let k = req.body.form
+  let p = JSON.parse(jiemi(k))
   let {
     pass,
     user
-  } = req.body.form
+  } = p
+  
   admin.find({
     phone:user,
     pass:pass
@@ -52,6 +56,6 @@ router.post('/getMessage', urlencodedParser, (req, res) => {
     })
   })
 })
-// router.post('/')
+
 
 module.exports = router

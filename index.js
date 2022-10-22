@@ -25,10 +25,12 @@ const cwBaseRouter = require('./router/cwbase')
 const cwRouter = require('./router/cw')
 const userRouter = require('./router/user')
 const adminRouter = require('./router/admin')
+const commentRouter = require('./router/comment')
 app.use('/cwbase', cwBaseRouter)
 app.use('/cw',cwRouter)
 app.use('/user',userRouter)
 app.use('/admin',adminRouter)
+app.use('/comment',commentRouter)
 
 
 // 启动服务器

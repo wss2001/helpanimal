@@ -5,6 +5,7 @@ const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
 const multer = require('multer')
+const {jiemi} = require('../utils/index')
 const fs = require('fs')
 const mongoControl = require('../dbc').mongoControl
 var user = new mongoControl('animal', 'user')
@@ -12,10 +13,16 @@ var cw = new mongoControl('animal', 'cw')
 // 用户模块
 // 登录
 router.post('/login', urlencodedParser, (req, res) => {
+  // let {
+  //   password,
+  //   phoneNumber
+  // } = req.body.form
+  let k = req.body.form
+  let p = JSON.parse(jiemi(k))
   let {
     password,
     phoneNumber
-  } = req.body.form
+  } = p
 
   user.find({
     phoneNumber: phoneNumber,
@@ -25,15 +32,12 @@ router.post('/login', urlencodedParser, (req, res) => {
       res.cc('err')
     }
     if (date.length == 0) {
-      // res.status(404).send(`手机号密码错误,请重新输入`)
       res.cc('手机号密码错误,请重新输入')
     } else {
       // 登陆成功给权限
-      // console.log(date[0]._id.toString());
       res.cookie('userToken', date[0]._id.toString(), {
         expires: new Date(Date.now() + 900000)
       })
-      // res.status(200).send(date)
       res.send({
         code: 'ok',
         status: 0,
@@ -64,22 +68,26 @@ router.get('/getCwBaseInfo', async (req, res) => {
     }
     let cwArr = cc[0].cw
     let lastArr = []
-    for (let i = 0; i < cwArr.length; i++) {
-      let result = await new Promise((resolve, reject) => {
-        cw.findById(cwArr[i], (err, date) => {
-          if (err) reject(err)
-          resolve(date)
+    try {
+      for (let i = 0; i < cwArr.length; i++) {
+        let result = await new Promise((resolve, reject) => {
+          cw.findById(cwArr[i], (err, date) => {
+            if (err) reject(err)
+            resolve(date)
+          })
         })
+        lastArr.push(result[0])
+      }
+      res.send({
+        code: 'ok',
+        status: 0,
+        message: '获取用户宠物数据成功！',
+        data: lastArr,
       })
-      lastArr.push(result[0])
+    } catch (error) {
+      res.cc(error)
     }
-    // console.log(lastArr);
-    res.send({
-      code: 'ok',
-      status: 0,
-      message: '获取用户宠物数据成功！',
-      data: lastArr,
-    })
+    
   }
 })
 
@@ -114,6 +122,9 @@ router.post('/register', urlencodedParser, (req, res) => {
     password: pass,
     phoneNumber,
     username,
+    shoucang:[],
+    friends:[],
+    msg:[],
     info: {},
     img:'http://localhost:3007/public/img/cw1.jpg',
     cw: cw

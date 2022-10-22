@@ -21,6 +21,20 @@ class mongoControl {
       })
     })
   }
+  sort(type, callback) {
+    MongoClient.connect(url, (error, db) => {
+      if (error) {
+        callback(error)
+        return
+      }
+      var dbo = db.db(this.dbName)
+      var mysort = { type:type };
+      dbo.collection(this.collectionName).find().sort(mysort).toArray((err, result) => {
+        callback(err, result)
+        db.close()
+      })
+    })
+  }
   insert(docs, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) throw error

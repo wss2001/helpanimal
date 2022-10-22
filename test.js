@@ -7,9 +7,9 @@
 //   console.log(result)
 // }
 // test()
-// const mongoControl = require('./dbc').mongoControl
-// // // 领养者
-// var admin = new mongoControl('animal', 'admin')
+const mongoControl = require('./dbc').mongoControl
+// // 领养者
+var comment = new mongoControl('animal', 'comment')
 // admin.insert([{phoneNumber:123,pass:'123'}],()=>{console.log('p')})
 // let arr = [
 //   '627cb6800e9ad24c2b1f8bca',
@@ -25,5 +25,11 @@
 //   }else{
 //     console.log('ok',date)
 //   }
+// })
+// comment.find({},(err,date)=>{
+//   console.log(date)
+// })
+// comment.sort(1,(err,date)=>{
+//   console.log(date)
 // })
 

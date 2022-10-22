@@ -5,6 +5,11 @@ const {
   addDate,
   calculateDiffTime
 } = require('../utils/index')
+const {
+  getfidBycwid,
+  getbrotheridByfid,
+  getCwBycwid
+} = require('../router/handle')
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
@@ -13,21 +18,21 @@ const mongoControl = require('../dbc').mongoControl
 // 领养者
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
-router.get('/getcw', (req, res) => {
+router.get('/getcw', async (req, res) => {
   let {
     id
   } = req.query
-  cw.findById(id, (err, data) => {
-    if (err) {
-      res.cc(err)
-    } else {
-      res.send({
-        code: 'ok',
-        status: 0,
-        data: data[0]
-      })
-    }
-  })
+  try {
+    let result = await getCwBycwid(id)
+    res.send({
+      code:'ok',
+    status:1,
+    data:result
+    })
+  } catch (error) {
+    res.cc(error)
+  }
+  
 })
 router.post('/addfood', urlencodedParser, async (req, res) => {
   let newfood = req.body.form.food
@@ -70,6 +75,23 @@ router.post('/addfood', urlencodedParser, async (req, res) => {
       })
     }
   })
+})
+router.get('/getbrother',async (req,res)=>{
+  let cwid = req.query.id;
+  try {
+    let fid = await getfidBycwid(cwid)
+  let brothercwid = await getbrotheridByfid(fid,cwid)
+  let result = await getCwBycwid(brothercwid)
+  res.send({
+    code:'ok',
+    status:1,
+    data:result
+  })
+  } catch (error) {
+    res.cc('没找到')
+  }
+  
+
 })
 //这里得这么导出
 module.exports = router

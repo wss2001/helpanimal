@@ -11,7 +11,10 @@ const {
   updatebasecwarr,
   deleteCw,
   getUseridBycw,
+  getfidBycwid,
+  getbrotheridByfid
 } = require('../router/handle')
+const {jiemi} = require('../utils/index')
 const mongoControl = require('../dbc').mongoControl
 // 领养者
 var cwBase = new mongoControl('animal', 'cwBase')
@@ -52,7 +55,7 @@ router.get('/getCwBaseInfo', async (req, res) => {
     let b = []
     for (const textPromise of textPromises) {
       let a = await textPromise
-      if (a[0] !== null) {
+      if (a[0] !== undefined) {
         b.push(a[0])
       }
     }
@@ -69,10 +72,16 @@ router.get('/getCwBaseInfo', async (req, res) => {
 })
 
 router.post('/login', urlencodedParser, (req, res) => {
+  // let {
+  //   password,
+  //   phoneNumber
+  // } = req.body.form
+  let k = req.body.form
+  let p = JSON.parse(jiemi(k))
   let {
     password,
     phoneNumber
-  } = req.body.form
+  } = p
   cwBase.find({
     phoneNumber: phoneNumber,
     pass: password
@@ -153,9 +162,6 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
   try {
     //删除宠物obj
     let [result, cwArr, userid] = await Promise.all([deleteCw(cwId), getBaseCwArr(baseid), getUseridBycw(cwId)])
-    // let result = await deleteCw(cwId)
-    // let cwArr = await getBaseCwArr(baseid)
-    // let userid = await getUseridBycw(cwId)
     console.log(result, cwArr, userid)
     console.log('=====')
     let newBaseCwArr = cwArr.filter(item => item !== cwId)
