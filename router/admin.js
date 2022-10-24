@@ -1,7 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const bodyParser = require('body-parser')
-const {jiemi} = require('../utils/index')
+const {
+  jiemi
+} = require('../utils/index')
+const {
+  getNews
+} = require('./handle')
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
@@ -11,6 +16,7 @@ const mongoControl = require('../dbc').mongoControl
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var admin = new mongoControl('animal', 'admin')
+var news = new mongoControl('animal', 'news')
 router.post('/login', urlencodedParser, (req, res) => {
   let k = req.body.form
   let p = JSON.parse(jiemi(k))
@@ -18,10 +24,10 @@ router.post('/login', urlencodedParser, (req, res) => {
     pass,
     user
   } = p
-  
+
   admin.find({
-    phone:user,
-    pass:pass
+    phone: user,
+    pass: pass
   }, (err, date) => {
     if (err) {
       res.cc(err)
@@ -55,6 +61,20 @@ router.post('/getMessage', urlencodedParser, (req, res) => {
       status: 1
     })
   })
+})
+//获取新闻
+router.get('/getnews', async (req, res) => {
+  try {
+    let result = await getNews()
+    res.send({
+      code:'',
+      status:200,
+      data:result
+    })
+  } catch (error) {
+    console.log(error)
+    res.cc([])
+  }
 })
 
 

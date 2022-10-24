@@ -4,6 +4,7 @@ var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var user = new mongoControl('animal', 'user')
 var comment = new mongoControl('animal', 'comment')
+var news = new mongoControl('animal', 'news')
 const {RandomNumBoth} = require('../utils/index')
 
 /**
@@ -269,7 +270,7 @@ exports.findUserByUserid = async (userid)=>{
           reject(err)
         }else{
           if(date.length==0 || date[0].username==undefined){
-            resolve(undefined)
+            resolve('')
           }else{
             resolve(date[0].username)
           }
@@ -279,6 +280,76 @@ exports.findUserByUserid = async (userid)=>{
     return result
   } catch (error) {
     console.log('根据用户id获取用户名失败')
+    return  ''
+  }
+}
+/**
+ * @description 获取新闻
+ * @returns news数组
+ */
+exports.getNews = async ()=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      news.find({},(err,date)=>{
+        if(err){
+          reject(err)
+        }else{
+          resolve(date)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据用户id获取用户名失败')
     return  undefined
+  }
+}
+/**
+ * @description 根据用户id来获取消息数组
+ * @param {*} id 
+ * @returns 消息数组[]
+ */
+exports.getUserMsgById = async (id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      user.findById(id,(err,date)=>{
+        if(err){
+          reject(err)
+        }else{
+          if(date[0]&&date[0].msg){
+            resolve(date[0].msg)
+          }else{
+            reject([])
+          }
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据用户id获取用户名失败')
+    return []
+  }
+}
+/**
+ * @description 根据信息来插入改变消息数组
+ * @param {*} id 
+ * @returns 
+ */
+exports.updateMsgById = async (arr,obj,id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      arr.push(obj)
+      user.updateById(id,{msg:arr},(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据信息来插入改变消息数组失败')
+    return  false
   }
 }

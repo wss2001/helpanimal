@@ -7,6 +7,7 @@ const urlencodedParser = bodyParser.urlencoded({
 const multer = require('multer')
 const {jiemi} = require('../utils/index')
 const fs = require('fs')
+const {getUserMsgById,updateMsgById,findUserByUserid} = require('./handle')
 const mongoControl = require('../dbc').mongoControl
 var user = new mongoControl('animal', 'user')
 var cw = new mongoControl('animal', 'cw')
@@ -80,7 +81,7 @@ router.get('/getCwBaseInfo', async (req, res) => {
       }
       res.send({
         code: 'ok',
-        status: 0,
+        status: 200,
         message: '获取用户宠物数据成功！',
         data: lastArr,
       })
@@ -103,7 +104,7 @@ router.get('/getUserInfo', (req, res) => {
     }
     res.send({
       code: 'ok',
-      status: 0,
+      status: 200,
       message: '获取用户数据成功！',
       data: date,
     })
@@ -225,6 +226,48 @@ router.post('/changepet',urlencodedParser,async (req,res)=>{
   } catch (error) {
     res.cc(error)
   }
+})
+//给人留言
+router.post('/leavemessage',urlencodedParser,async (req,res)=>{
+  let {
+    content,
+    id,
+    fid
+  } = req.body.form
+  try {
+    // let [arr,name] = Promise.all[getUserMsgById(fid),findUserByUserid(id)]
+    let arr = await getUserMsgById(fid)
+    let name = await findUserByUserid(id)
+    let obj = {
+    state:'pl', //消息类型
+    content,  //留言内容
+    fid:id,  //来自谁的id
+    fname:name  //来自谁的名字
+  }
+  console.log(name)
+  let result = await updateMsgById(arr,obj,fid)
+  if(result){
+    res.send({
+      code:'ok',
+      status:200,
+      data:'ok'
+    })
+  }else{
+    res.cc('发送失败')
+  }
+  } catch (error) {
+    console.log(error)
+    res.cc('发送失败')
+  }
+  
+})
+//发送好友请求
+router.post('/addfriend',urlencodedParser,async (req,res)=>{
+  let {
+    content,
+    id,
+    fid
+  } = req.body.form
 })
 
 module.exports = router

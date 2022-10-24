@@ -7,9 +7,19 @@
 //   console.log(result)
 // }
 // test()
+const moment = require('moment')
 const mongoControl = require('./dbc').mongoControl
 // // 领养者
 var comment = new mongoControl('animal', 'comment')
+var news = new mongoControl('animal', 'news')
+news.insert([{
+  content:'',
+  date: moment().format('YYYY-MM-DD  HH:mm'),
+  intro:'',
+  state:'热点'
+}],()=>{
+  
+})
 // admin.insert([{phoneNumber:123,pass:'123'}],()=>{console.log('p')})
 // let arr = [
 //   '627cb6800e9ad24c2b1f8bca',
