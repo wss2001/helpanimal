@@ -8,7 +8,7 @@ var news = new mongoControl('animal', 'news')
 const {RandomNumBoth} = require('../utils/index')
 
 /**
- * @description通过用户id获取用户宠物数组
+ * @description 通过用户id获取用户宠物数组
  * @param {id} userid 
  * @returns cw数组
  */
@@ -305,6 +305,30 @@ exports.getNews = async ()=>{
   }
 }
 /**
+ * 根据id来更换用户内容
+ * @param {*} id 
+ * @param {*} type 
+ * @param {*} obj 
+ * @returns 
+ */
+exports.updateUserById = async (id,type,obj)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      user.updateById(id,{type:obj},(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id来更换用户内容失败')
+    return  false
+  }
+}
+/**
  * @description 根据用户id来获取消息数组
  * @param {*} id 
  * @returns 消息数组[]
@@ -351,5 +375,27 @@ exports.updateMsgById = async (arr,obj,id)=>{
   } catch (error) {
     console.log('根据信息来插入改变消息数组失败')
     return  false
+  }
+}
+/**
+ * @description 根据用户id获取其集合
+ * @param {*} id 
+ * @returns 
+ */
+exports.getUserById = async (id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      user.findById(id,(err,date)=>{
+        if(err){
+          reject(err)
+        }else{
+          resolve(date[0])
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据用户id获取其集合失败')
+    return  []
   }
 }
