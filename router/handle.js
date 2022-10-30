@@ -1,10 +1,13 @@
 const mongoControl = require('../dbc').mongoControl
 // 领养者
+const moment = require('moment')
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var user = new mongoControl('animal', 'user')
 var comment = new mongoControl('animal', 'comment')
 var news = new mongoControl('animal', 'news')
+const admin = new mongoControl('animal', 'admin')
+const Msg = new mongoControl('animal', 'userMsg')
 const {RandomNumBoth} = require('../utils/index')
 
 /**
@@ -49,14 +52,17 @@ exports.deleteCw = async (cwid) => {
   try {
     let result = await new Promise((resolve, reject) => {
       cw.deleteById(cwid, (err, date) => {
-        if (err) reject(err)
-        resolve(date)
+        if (err) {reject(false)}
+        else{
+          resolve(date)
+        }
+        
       })
     })
     return result
   } catch (error) {
-    console.log(error)
-    return '根据宠物id删除宠物失败'
+    console.log('根据宠物id删除宠物失败')
+    return false
   }
   
 }
@@ -314,7 +320,7 @@ exports.getNews = async ()=>{
 exports.updateUserById = async (id,type,obj)=>{
   try {
     let result = await new Promise((resolve,reject)=>{
-      user.updateById(id,{type:obj},(err,date)=>{
+      user.updateById(id,{friends:obj},(err,date)=>{
         if(err){
           reject(false)
         }else{
@@ -359,11 +365,33 @@ exports.getUserMsgById = async (id)=>{
  * @param {*} id 
  * @returns 
  */
-exports.updateMsgById = async (arr,obj,id)=>{
+// exports.updateMsgById = async (arr,obj,id)=>{
+//   try {
+//     let result = await new Promise((resolve,reject)=>{
+//       arr.push(obj)
+//       user.updateById(id,{msg:arr},(err,date)=>{
+//         if(err){
+//           reject(false)
+//         }else{
+//           resolve(true)
+//         }
+//       })
+//     })
+//     return result
+//   } catch (error) {
+//     console.log('根据信息来插入改变消息数组失败')
+//     return  false
+//   }
+// }
+/**
+ * 插入用户消息数组消息
+ * @param {*} obj 
+ * @returns 
+ */
+exports.insertMsg = async (obj)=>{
   try {
-    let result = await new Promise((resolve,reject)=>{
-      arr.push(obj)
-      user.updateById(id,{msg:arr},(err,date)=>{
+    const result = new Promise((resolve,reject)=>{
+      Msg.insert([{...obj,date: moment().format('YYYY-MM-DD')}],(err,date)=>{
         if(err){
           reject(false)
         }else{
@@ -373,10 +401,33 @@ exports.updateMsgById = async (arr,obj,id)=>{
     })
     return result
   } catch (error) {
-    console.log('根据信息来插入改变消息数组失败')
-    return  false
+    console.log('')
+    return false
   }
 }
+/**
+ * 根据id修改消息内容
+ * @param {*} id 
+ * @returns 
+ */
+exports.updateMsg = async (id)=>{
+  try {
+    const result = new Promise((resolve,reject)=>{
+      Msg.updateById(id,{show:true},(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('')
+    return false
+  }
+}
+
 /**
  * @description 根据用户id获取其集合
  * @param {*} id 
@@ -397,5 +448,49 @@ exports.getUserById = async (id)=>{
   } catch (error) {
     console.log('根据用户id获取其集合失败')
     return  []
+  }
+}
+/**
+ * 根据id删除admin中的消息
+ * @param {*} id 
+ * @returns 
+ */
+exports.deleteMsgByID = async (id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      admin.deleteById(id,(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id删除admin中的消息失败')
+    return  false
+  }
+}
+/**
+ * 根据id来查找admin中的注册消息
+ * @param {*} id 
+ * @returns 
+ */
+exports.findMsgById = async (id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      admin.findById(id,(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(date[0])
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id来查找admin中的注册消息失败')
+    return  false
   }
 }

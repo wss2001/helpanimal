@@ -7,10 +7,11 @@ const urlencodedParser = bodyParser.urlencoded({
 const multer = require('multer')
 const {jiemi} = require('../utils/index')
 const fs = require('fs')
-const {getUserMsgById,updateMsgById,getUserById,findUserByUserid,updateUserById} = require('./handle')
+const {updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById} = require('./handle')
 const mongoControl = require('../dbc').mongoControl
 var user = new mongoControl('animal', 'user')
 var cw = new mongoControl('animal', 'cw')
+const Msg = new mongoControl('animal', 'userMsg')
 // 用户模块
 // 登录
 router.post('/login', urlencodedParser, (req, res) => {
@@ -69,26 +70,29 @@ router.get('/getCwBaseInfo', async (req, res) => {
     }
     let cwArr = cc[0].cw
     let lastArr = []
-    try {
       for (let i = 0; i < cwArr.length; i++) {
+        //trycatch在for循环里将捕获的错误不进行push，避免了id错误时，获取不到宠物信息所产生的错误
+        try {
         let result = await new Promise((resolve, reject) => {
           cw.findById(cwArr[i], (err, date) => {
-            if (err) reject(err)
-            resolve(date)
+            if (err) {reject([{}])}
+            else{
+              resolve(date)
+            }
           })
         })
         lastArr.push(result[0])
+      } catch (error) {
+        console.log('通过id获取宠物详细信息失败')
+        // res.cc(error)
       }
+    }
       res.send({
         code: 'ok',
         status: 200,
         message: '获取用户宠物数据成功！',
         data: lastArr,
       })
-    } catch (error) {
-      res.cc(error)
-    }
-    
   }
 })
 
@@ -108,6 +112,20 @@ router.get('/getUserInfo', (req, res) => {
       message: '获取用户数据成功！',
       data: date,
     })
+  })
+})
+//获取用户消息数组
+router.get('/getUserMsg',(req,res)=>{
+  const id = req.query.id;
+  Msg.find({myid:id,state:'pl'},(err,date)=>{
+    if(err){
+      res.cc(err)
+    }else{
+      res.send({
+        status:200,
+        data:date,
+      })
+    }
   })
 })
 
@@ -235,16 +253,15 @@ router.post('/leavemessage',urlencodedParser,async (req,res)=>{
     fid
   } = req.body.form
   try {
-    // let [arr,name] = Promise.all[getUserMsgById(fid),findUserByUserid(id)]
-    let arr = await getUserMsgById(fid)
     let name = await findUserByUserid(id)
     let obj = {
     state:'pl', //消息类型
     content,  //留言内容
     fid:id,  //来自谁的id
-    fname:name  //来自谁的名字
+    fname:name,  //来自谁的名字
+    myid:fid //自己的id方便查找
   }
-  let result = await updateMsgById(arr,obj,fid)
+  let result = await insertMsg(obj)
   if(result){
     res.send({
       code:'ok',
@@ -268,29 +285,21 @@ router.post('/addfriend',urlencodedParser,async (req,res)=>{
     content
   } = req.body.form
   try {
-    let name = await findUserByUserid(myid)
-    let userObj = await getUserById(userid)
-    if(userObj.friends!==undefined&&userObj.friendRequest!==undefined){
-      let {friends,friendRequest} = userObj
-      let img = userObj.img ||'http://127.0.0.1:3007/public/img/cw1.jpg'
-      let obj = {
-        content,
-        name,
-        fid:myid,
-        img,
-        state:false
-      }
-      friendRequest.push(obj)
-      user.updateById(userid,{friendRequest:friendRequest},(err,date)=>{
-        if(err){
-          res.cc('添加请求出错了')
-        }else{
-          res.send({
-            status:200,
-            code:'ok',
-            data:'ok'
-          })
-        }
+    const name = await findUserByUserid(myid)
+    const userobj = await getUserById(myid);
+    const obj = {
+      fname:name,
+      content,
+      fid:myid,
+      myid:userid,
+      state:'fq',
+      img:userobj.img || ''
+    }
+    const result = await insertMsg(obj)
+    if(result){
+      res.send({
+        status:200,
+        data:'ok',
       })
     }
   } catch (error) {
@@ -299,18 +308,19 @@ router.post('/addfriend',urlencodedParser,async (req,res)=>{
 })
 //确认添加朋友
 router.post('/sureAddFriend',urlencodedParser,async (req,res)=>{
-  let {myid,userid} = req.body.form;
+  let {myid,userid,_id} = req.body.form;
   try {
-    let userobj = await getUserById(myid);
-    let newuserobj = await getUserById(userid)
-    if(userobj.friends!==undefined&&newuserobj.friends!==undefined){
-      let {friends} = userobj;
-      let newFriends = newuserobj.friends;
+    let myuserobj = await getUserById(myid);
+    let otheruserobj = await getUserById(userid)
+    if(myuserobj.friends!==undefined&&otheruserobj.friends!==undefined){
+      let friends = myuserobj.friends;
+      let newFriends = otheruserobj.friends;
       newFriends.push(myid)
       friends.push(userid);
       let r1 = await updateUserById(myid,'friends',friends)
       let r2 = await updateUserById(userid,'friends',newFriends)
-      if(r1&&r2){
+      const r3 = await updateMsg(_id)
+      if(r1&&r2&&r3){
         res.send({
           status:200,
           data:'ok'
@@ -318,12 +328,13 @@ router.post('/sureAddFriend',urlencodedParser,async (req,res)=>{
       }else{
         res.cc('添加失败')
       }
+    }else{
+      res.cc('确认出错')
     }
   } catch (error) {
     console.log('确认出错')
     res.cc(error)
   }
-
 })
 //获取用户好友数组
 router.get('/getfriends',async (req,res)=>{
@@ -346,7 +357,6 @@ router.get('/getfriends',async (req,res)=>{
       for(const userPromise of userPromises){
         let a = await userPromise;
         if(a!==undefined){
-          console.log(a)
           userArr.push(a)
         }
       }
@@ -361,18 +371,18 @@ router.get('/getfriends',async (req,res)=>{
     res.cc('获取好友列表出错')
   }
 })
-router.get('/getfriendrequest',async (req,res)=>{
+//获取好友请求列表
+router.get('/getfriendrequest',(req,res)=>{
   let id = req.query.id;
-  console.log(id)
-  try {
-    let user = await getUserById(id);
-    res.send({
-      code:'ok',
-      status:200,
-      data:user.friendRequest ||[]
-    })
-  } catch (error) {
-    res.cc(error)
-  }
+  Msg.find({state:'fq',myid:id},(err,date)=>{
+    if(err){
+      res.cc(err)
+    }else{
+      res.send({
+        status:200,
+        data:date
+      })
+    }
+  })
 })
 module.exports = router

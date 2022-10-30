@@ -72,10 +72,6 @@ router.get('/getCwBaseInfo', async (req, res) => {
 })
 
 router.post('/login', urlencodedParser, (req, res) => {
-  // let {
-  //   password,
-  //   phoneNumber
-  // } = req.body.form
   let k = req.body.form
   let p = JSON.parse(jiemi(k))
   let {
@@ -136,11 +132,10 @@ router.post('/addpet', urlencodedParser, async (req, res) => {
     }, (err, date) => {
       if (err) {
         res.cc(err)
-        console.log(err);
       } else {
         res.send({
           code: 'add pet ok',
-          status: 1,
+          status: 200,
           message: '新增宠物成功',
           data: date
         })
@@ -158,7 +153,7 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
     cwId,
     baseid
   } = req.body.form
-  console.log(baseid, cwId);
+  // console.log(baseid, cwId);
   try {
     //删除宠物obj
     let [result, cwArr, userid] = await Promise.all([deleteCw(cwId), getBaseCwArr(baseid), getUseridBycw(cwId)])
@@ -196,7 +191,8 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
 //修改宠物信息
 router.post('/updatepet', urlencodedParser, (req, res) => {
   let {
-    id
+    id,
+    name,
   } = req.body.form
 
 })

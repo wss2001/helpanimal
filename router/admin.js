@@ -11,6 +11,14 @@ const {
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
+const {
+  deleteMsgByID,
+  findMsgById,
+  getBaseCwArr,
+  deleteCw,
+  getUseridBycw,
+  updateusercwarr
+} = require('./handle')
 
 const mongoControl = require('../dbc').mongoControl
 // 领养者
@@ -81,16 +89,16 @@ router.get('/getnews', async (req, res) => {
   }
 })
 // 获取单个新闻
-router.get('/getnewsbyid',(req,res)=>{
+router.get('/getnewsbyid', (req, res) => {
   let id = req.query.id;
-  news.findById(id,(err,date)=>{
-    if(err){
+  news.findById(id, (err, date) => {
+    if (err) {
       res.cc('出错')
-    }else{
+    } else {
       res.send({
-        code:'ok',
-        status:200,
-        data:date[0]
+        code: 'ok',
+        status: 200,
+        data: date[0]
       })
     }
   })
@@ -99,12 +107,14 @@ router.get('/getnewsbyid',(req,res)=>{
 router.post('/registercwadmin', urlencodedParser, (req, res) => {
   let {
     phone,
-    intro
+    intro,
+    pass
   } = req.body.form;
   admin.insert([{
     state: '1',
     phone,
-    intro
+    intro,
+    pass
   }], (err, date) => {
     if (err) {
       res.cc('注册失败')
@@ -118,25 +128,112 @@ router.post('/registercwadmin', urlencodedParser, (req, res) => {
   })
 })
 //同意注册基地
-router.post('/agree',urlencodedParser,(req,res)=>{
-  //基地进行添加，注册消息进行更改
+router.post('/agree', urlencodedParser, async (req, res) => {
+  const {
+    id
+  } = req.body.form;
+  try {
+    const Msg = await findMsgById(id)
+    const result = await deleteMsgByID(id)
+    if (result && Msg) {
+      cwBase.insert([{
+        phoneNumber: Msg.phone,
+        pass: Msg.pass,
+        intro: Msg.intro,
+        baseName: "",
+        address: '',
+        img: '',
+        baseCw: [],
+        PeopleName: '',
+        income: ''
+      }], (err, date) => {
+        if (err) {
+          res.cc('同意失败')
+        } else {
+          res.send({
+            status: 200,
+            data:date,
+          })
+        }
+      })
+    } else {
+      res.cc('同意失败')
+    }
+  } catch (error) {
+    res.cc('同意失败')
+  }
+
+
+})
+//拒绝注册基地
+router.post('/refuse', urlencodedParser, async (req, res) => {
+  const {
+    id
+  } = req.body.form;
+  try {
+    const result = await deleteMsgByID(id)
+    if (result) {
+      res.send({
+        status: 200,
+        data: '删除成功'
+      })
+    } else {
+      res.cc('删除成功')
+    }
+  } catch (error) {
+    res.cc('删除成功')
+  }
+})
+//删除宠物基地
+router.post('/removecwbase', urlencodedParser, async (req, res) => {
+  const {
+    id
+  } = req.body;
+  try {
+    const cwArr = await getBaseCwArr(id);
+    for(let i=0;i<cwArr.length;i++){
+      try {
+        await deleteCw(cwArr[i])
+      } catch (error) {
+        console.log('根据宠物id删除宠物失败',cwArr[i])
+      }
+    }
+    cwBase.deleteById(id,(err,date)=>{
+      if(err){
+        res.cc('删除宠物基地失败')
+      }else{
+        res.send({
+          status:200,
+          data:'ok'
+        })
+      }
+    })
+  } catch (error) {
+    res.cc('删除宠物基地失败')
+  }
 })
 // 新增新闻
-router.post('/addNews',urlencodedParser,(req,res)=>{
-  const {state,content,title} = req.body.form;
+router.post('/addNews', urlencodedParser, (req, res) => {
+  const {
+    state,
+    content,
+    title,
+    img
+  } = req.body.form;
   news.insert([{
     state,
     content,
     title,
+    img,
     date: moment().format('YYYY-MM-DD  HH:mm')
-  }],(err,date)=>{
-    if(err){
+  }], (err, date) => {
+    if (err) {
       res.cc('新增新闻出错')
-    }else{
+    } else {
       res.send({
-        code:'ok',
-        data:'ok',
-        status:200
+        code: 'ok',
+        data: 'ok',
+        status: 200
       })
     }
   })
