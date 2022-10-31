@@ -12,14 +12,25 @@ const mongoControl = require('./dbc').mongoControl
 // // 领养者
 var comment = new mongoControl('animal', 'comment')
 var news = new mongoControl('animal', 'news')
-news.insert([{
-  content:'',
-  date: moment().format('YYYY-MM-DD  HH:mm'),
-  intro:'',
-  state:'热点'
-}],()=>{
-  
-})
+const updateUserById = async (id,obj)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      comment.updateById(id,obj,(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id来更换用户内容失败')
+    return  false
+  }
+}
+const datet = {datete:[123]}
+updateUserById('62931c3d1fa40491b695795b',datet)
 // admin.insert([{phoneNumber:123,pass:'123'}],()=>{console.log('p')})
 // let arr = [
 //   '627cb6800e9ad24c2b1f8bca',

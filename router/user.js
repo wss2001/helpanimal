@@ -7,7 +7,7 @@ const urlencodedParser = bodyParser.urlencoded({
 const multer = require('multer')
 const {jiemi} = require('../utils/index')
 const fs = require('fs')
-const {updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById} = require('./handle')
+const {getCwBycwid,updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById,updateCw} = require('./handle')
 const mongoControl = require('../dbc').mongoControl
 var user = new mongoControl('animal', 'user')
 var cw = new mongoControl('animal', 'cw')
@@ -15,10 +15,6 @@ const Msg = new mongoControl('animal', 'userMsg')
 // 用户模块
 // 登录
 router.post('/login', urlencodedParser, (req, res) => {
-  // let {
-  //   password,
-  //   phoneNumber
-  // } = req.body.form
   let k = req.body.form
   let p = JSON.parse(jiemi(k))
   let {
@@ -317,9 +313,9 @@ router.post('/sureAddFriend',urlencodedParser,async (req,res)=>{
       let newFriends = otheruserobj.friends;
       newFriends.push(myid)
       friends.push(userid);
-      let r1 = await updateUserById(myid,'friends',friends)
-      let r2 = await updateUserById(userid,'friends',newFriends)
-      const r3 = await updateMsg(_id)
+      let r1 = await updateUserById(myid,{friends:friends})
+      let r2 = await updateUserById(userid,{friends:newFriends})
+      const r3 = await updateMsg(_id,{show:true})
       if(r1&&r2&&r3){
         res.send({
           status:200,
@@ -385,4 +381,91 @@ router.get('/getfriendrequest',(req,res)=>{
     }
   })
 })
+//发送好友转增请求
+router.post('/findshare',urlencodedParser,async(req,res)=>{
+  const {userid,myid,cwid} = req.body.form;
+  try {
+    const username = await findUserByUserid(myid) || ''
+    const cw = await getCwBycwid(cwid)
+    const obj = {
+      state:'zz',
+      myid:userid,
+      fid:myid,
+      fname:username,
+      cwid:cwid,
+      issure:false,
+      cwName:cw.name
+    }
+    const result = await insertMsg(obj)
+    if(result){
+      res.send({
+        status:200,
+        data:'ok'
+      })
+    }
+  } catch (error) {
+    res.cc('发送好友转增请求失败')
+  }
+  
+})
+//获取转增请求
+router.get('/getfriendshare',(req,res)=>{
+  let id = req.query.id;
+  Msg.find({state:'zz',myid:id},(err,date)=>{
+    if(err){
+      res.cc(err)
+    }else{
+      res.send({
+        status:200,
+        data:date
+      })
+    }
+  })
+})
+//同意转增请求
+router.post('/agreezz',urlencodedParser,async(req,res)=>{
+  let {myid,userid,_id,cwid} = req.body.form;
+  try {
+    let myuserobj = await getUserById(myid);
+    let otheruserobj = await getUserById(userid)
+    if(myuserobj.cw!==undefined&&otheruserobj.cw!==undefined){
+      let mycw = myuserobj.cw;
+      let othercw = otheruserobj.cw;
+      mycw.push(cwid)
+      let newothercw = othercw.filter(item=>item!==cwid)
+      let r1 = await updateUserById(myid,{cw:mycw})
+      let r2 = await updateUserById(userid,{cw:newothercw})
+      const r3 = await updateMsg(_id,{issure:true,yes:true})
+      const r4 = await updateCw(cwid,{userid:myid})
+      if(r1&&r2&&r3&&r4){
+        res.send({
+          status:200,
+          data:'resolved'
+        })
+      }else{
+        res.cc('添加失败')
+      }
+    }else{
+      res.cc('确认出错')
+    }
+  } catch (error) {
+    res.cc(error)
+  }
+})
+//拒绝转增请求
+router.post('/refusezz',urlencodedParser,async(req,res)=>{
+  let {_id} = req.body.form;
+  try {
+    const r3 = await updateMsg(_id,{issure:true,yes:false})
+    if(r3){
+      res.send({
+        status:200,
+        data:'rejected'
+      })
+    }
+  } catch (error) {
+    res.cc(error)
+  }
+})
+
 module.exports = router

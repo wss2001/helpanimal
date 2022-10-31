@@ -131,7 +131,7 @@ exports.updatebasecwarr = async (baseid, arr) => {
     })
     return result
   } catch (error) {
-    console.log(通过基地id更新基地宠物数组失败)
+    console.log('通过基地id更新基地宠物数组失败')
     return '通过基地id更新基地宠物数组失败'
   }
   
@@ -237,8 +237,8 @@ exports.getCwBycwid = async (cwid)=>{
     })
     return result
   } catch (error) {
-    console.log('通过宠物id获取基地id失败')
-    return  '通过宠物id获取基地id失败'
+    console.log('通过宠物id获取宠物数据失败')
+    return false
   }
 }
 /**
@@ -306,7 +306,7 @@ exports.getNews = async ()=>{
     })
     return result
   } catch (error) {
-    console.log('根据用户id获取用户名失败')
+    console.log('获取新闻失败')
     return  undefined
   }
 }
@@ -317,10 +317,10 @@ exports.getNews = async ()=>{
  * @param {*} obj 
  * @returns 
  */
-exports.updateUserById = async (id,type,obj)=>{
+exports.updateUserById = async (id,obj)=>{
   try {
     let result = await new Promise((resolve,reject)=>{
-      user.updateById(id,{friends:obj},(err,date)=>{
+      user.updateById(id,obj,(err,date)=>{
         if(err){
           reject(false)
         }else{
@@ -406,14 +406,15 @@ exports.insertMsg = async (obj)=>{
   }
 }
 /**
- * 根据id修改消息内容
+ * @description 根据id修改消息内容
  * @param {*} id 
+ * @param {*} obj 
  * @returns 
  */
-exports.updateMsg = async (id)=>{
+exports.updateMsg = async (id,obj)=>{
   try {
     const result = new Promise((resolve,reject)=>{
-      Msg.updateById(id,{show:true},(err,date)=>{
+      Msg.updateById(id,obj,(err,date)=>{
         if(err){
           reject(false)
         }else{
@@ -423,7 +424,30 @@ exports.updateMsg = async (id)=>{
     })
     return result
   } catch (error) {
-    console.log('')
+    console.log('根据id修改消息内容失败')
+    return false
+  }
+}
+/**
+ * 根据id来修改cw集合
+ * @param {*} id 
+ * @param {*} obj 
+ * @returns 
+ */
+exports.updateCw = async (id,obj)=>{
+  try {
+    const result = new Promise((resolve,reject)=>{
+      cw.updateById(id,obj,(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id来修改cw集合失败')
     return false
   }
 }
