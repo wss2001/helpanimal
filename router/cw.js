@@ -8,7 +8,7 @@ const {
 const {
   getfidBycwid,
   getbrotheridByfid,
-  getCwBycwid
+  getCwBycwid,updateCw
 } = require('../router/handle')
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
@@ -26,7 +26,7 @@ router.get('/getcw', async (req, res) => {
     let result = await getCwBycwid(id)
     res.send({
       code:'ok',
-    status:1,
+    status:200,
     data:result
     })
   } catch (error) {
@@ -84,14 +84,37 @@ router.get('/getbrother',async (req,res)=>{
   let result = await getCwBycwid(brothercwid)
   res.send({
     code:'ok',
-    status:1,
+    status:200,
     data:result
   })
   } catch (error) {
     res.cc('没找到')
   }
-  
-
+})
+router.get('/updatefood',async(req,res)=>{
+  const cwid = req.query.id;
+  try {
+    const cw = await getCwBycwid(cwid)
+    const alsoFood = cw.alsoFood
+    const date = new Date().getTime()
+    const foodTime = new Date(alsoFood).getTime()
+    let handleFood
+    if(date>foodTime){
+      handleFood = 0
+    }
+    else{
+      handleFood = calculateDiffTime(date,foodTime)
+    }
+    const r1 = await updateCw(cwid,{alsoFoodtian:handleFood})
+    if(r1){
+      res.send({
+        status:200,
+        data:'update cw food ok'
+      })
+    }
+  } catch (error) {
+    res.cc('更新宠物天数失败')
+  }
 })
 //这里得这么导出
 module.exports = router

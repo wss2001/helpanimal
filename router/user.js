@@ -467,5 +467,29 @@ router.post('/refusezz',urlencodedParser,async(req,res)=>{
     res.cc(error)
   }
 })
+//收藏
+router.post('/collect',urlencodedParser,async(req,res)=>{
+  const {myid,cwid} = req.body.form;
+  try {
+    let myuserobj = await getUserById(myid);
+    if(myuserobj.shoucang!==undefined){
+      let arr = myuserobj.shoucang;
+      arr.push(cwid)
+      const r1 = await updateUserById(myid,{shoucang:arr})
+      if(r1){
+        res.send({
+          status:200,
+          data:'ok'
+        })
+      }else{
+        res.cc('失败')
+      }
+    }else{
+      res.cc('失败')
+    }
+  } catch (error) {
+    res.cc('失败')
+  }
+})
 
 module.exports = router

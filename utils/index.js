@@ -45,7 +45,7 @@ exports.calculateDiffTime = function(startTime,endTime){
       var minute = Math.floor(runTime / 60);
       runTime = runTime % 60;
       var second = runTime;
-      console.log(`相差${year}年${month}月${day}天${hour}小时${minute}分${second}秒`);
+      // console.log(`相差${year}年${month}月${day}天${hour}小时${minute}分${second}秒`);
       return `${month}月${day}天`
 }
 /**
@@ -56,7 +56,7 @@ exports.calculateDiffTime = function(startTime,endTime){
  */
 exports.addDate = function(date, days) {
   var d = new Date(date);
-  d.setDate(d.getDate() + days);
+  d.setDate(d.getDate() + parseInt(days));
   var m = d.getMonth() + 1;
   var da = d.getDate();
   if (m < 10) {

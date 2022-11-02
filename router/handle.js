@@ -178,7 +178,7 @@ exports.getfidBycwid = async (cwid)=>{
     return result
   } catch (error) {
     console.log('通过宠物id获取基地id失败')
-    return  '通过宠物id获取基地id失败'
+    return false
   }
 }
 /**
