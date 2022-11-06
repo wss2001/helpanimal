@@ -7,7 +7,7 @@ const urlencodedParser = bodyParser.urlencoded({
 const multer = require('multer')
 const {jiemi} = require('../utils/index')
 const fs = require('fs')
-const {getCwBycwid,updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById,updateCw} = require('./handle')
+const {getCwBycwid,updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById,updateCw,getCwBase,getfidBycwid} = require('./handle')
 const mongoControl = require('../dbc').mongoControl
 var user = new mongoControl('animal', 'user')
 var cw = new mongoControl('animal', 'cw')
@@ -489,6 +489,38 @@ router.post('/collect',urlencodedParser,async(req,res)=>{
     }
   } catch (error) {
     res.cc('失败')
+  }
+})
+//获取证书
+router.post('/getcertificate',urlencodedParser,async(req,res)=>{
+  const {userid} = req.body.form;
+  try {
+    const user = await getUserById(userid)
+    const cwArr = user.cw
+    let fArr = []
+    for(let i=0;i<cwArr.length;i++){
+      try {
+        let fid = await getfidBycwid(cwArr[i])
+        fArr.push(fid)
+      } catch (error) {
+        console.log('getfidBycwid失败')
+      }
+    }
+    let result = []
+    for(let i=0;i<fArr.length;i++){
+      try {
+        let base = await getCwBase(fArr[i])
+        result.push(base)
+      } catch (error) {
+        console.log('getCwBase失败')
+      }
+    }
+    res.send({
+      status:200,
+      data:result
+    })
+  } catch (error) {
+    res.cc([])
   }
 })
 

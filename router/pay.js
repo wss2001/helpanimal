@@ -58,13 +58,23 @@ router.post('/api/payment', urlencodedParser, async (req, res) => { //支付宝�
 });
 // 获取支付后的结果
 router.get('/getpay', async (req, res) => {
-  const {
-    state,
-    food,
-    userid,
-    cwid
-  } = JSON.parse(req.query.k);
+  // console.log(123)
+  // console.log(req.query.k)
+  // const a = req.query.k.replace(/%22/g, '');
+  // console.log(req.query.k)
+  // console.log('a',a)
+  // var str  = decodeURIComponent(a)
+  // let newstr  = decodeURIComponent(req.query.k)
+  // console.log(str,newstr)
   try {
+    const {
+      state,
+      food,
+      userid,
+      cwid,
+    } = JSON.parse(req.query.k);
+    
+    // return
     const cw = await getCwBycwid(cwid)
     const newFood = addDate(cw.alsoFood, food)
     const fid = await getfidBycwid(cwid)
@@ -78,7 +88,7 @@ router.get('/getpay', async (req, res) => {
         userid,
         cwid,
         food,
-        baseid:fid
+        baseid:fid,
       }
       const r2 = await insertMsg(obj)
       if (result && r2) {
@@ -106,6 +116,7 @@ router.get('/getpay', async (req, res) => {
     }
 
   } catch (error) {
+    console.log(error)
     res.cc('出错了')
   }
 })

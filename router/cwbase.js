@@ -20,6 +20,7 @@ const mongoControl = require('../dbc').mongoControl
 var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var user = new mongoControl('animal', 'user')
+const Msg = new mongoControl('animal', 'userMsg')
 var admin = new mongoControl('animal', 'admin')
 
 router.get('/getbase', (req, res) => {
@@ -215,6 +216,20 @@ router.post('/register', urlencodedParser, (req, res) => {
         code: 'ok',
         data: '等待管理员与你确认核实后才能运行',
         status: 1,
+      })
+    }
+  })
+})
+//获取Msg里的收益
+router.post('/getmoney',urlencodedParser,async(req,res)=>{
+  let {baseid} = req.body.form;
+  Msg.find({baseid:baseid},(err,date)=>{
+    if(err){
+      res.cc('搜寻失败')
+    }else{
+      res.send({
+        status:200,
+        data:date
       })
     }
   })

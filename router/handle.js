@@ -518,3 +518,25 @@ exports.findMsgById = async (id)=>{
     return  false
   }
 }
+/**
+ * @description 根据id获取基地集合
+ * @param {*} id 
+ * @returns 
+ */
+exports.getCwBase = async (id)=>{
+  try {
+    let result = await new Promise((resolve,reject)=>{
+      cwBase.findById(id,(err,date)=>{
+        if(err){
+          reject({})
+        }else{
+          resolve(date[0])
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('通过宠物id获取基地id失败')
+    return false
+  }
+}
