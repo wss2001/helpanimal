@@ -42,6 +42,22 @@ exports.getBaseCwArr = async (baseid) => {
   })
   return result
 }
+/**
+ * @description 通过基地id获取基地
+ * @param {id} baseid 
+ * @returns 基地集合
+ */
+exports.getBaseById = async (baseid) => {
+  let result = await new Promise((resolve, reject) => {
+    cwBase.findById(baseid, (err, date) => {
+      if (err){ reject(false)}else{
+        resolve(date[0])
+      }
+      
+    })
+  })
+  return result
+}
 
 /**
  * @description 根据宠物id删除宠物
@@ -415,6 +431,29 @@ exports.updateMsg = async (id,obj)=>{
   try {
     const result = new Promise((resolve,reject)=>{
       Msg.updateById(id,obj,(err,date)=>{
+        if(err){
+          reject(false)
+        }else{
+          resolve(true)
+        }
+      })
+    })
+    return result
+  } catch (error) {
+    console.log('根据id修改消息内容失败')
+    return false
+  }
+}
+/**
+ * @description 根据id修改基地内容
+ * @param {*} id 
+ * @param {*} obj 
+ * @returns 
+ */
+exports.updateCwBase = async (id,obj)=>{
+  try {
+    const result = new Promise((resolve,reject)=>{
+      cwBase.updateById(id,obj,(err,date)=>{
         if(err){
           reject(false)
         }else{

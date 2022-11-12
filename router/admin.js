@@ -26,6 +26,8 @@ var cwBase = new mongoControl('animal', 'cwBase')
 var cw = new mongoControl('animal', 'cw')
 var admin = new mongoControl('animal', 'admin')
 var news = new mongoControl('animal', 'news')
+const Msg = new mongoControl('animal', 'userMsg')
+
 router.post('/login', urlencodedParser, (req, res) => {
   let k = req.body.form
   let p = JSON.parse(jiemi(k))
@@ -234,6 +236,18 @@ router.post('/addNews', urlencodedParser, (req, res) => {
         code: 'ok',
         data: 'ok',
         status: 200
+      })
+    }
+  })
+})
+router.get('/getIncome',async (req,res)=>{
+  Msg.find({state:'tw'},(err,date)=>{
+    if(err){
+      res.cc(err)
+    }else{
+      res.send({
+        status:200,
+        data:date
       })
     }
   })

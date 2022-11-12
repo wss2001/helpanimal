@@ -6,6 +6,7 @@ const urlencodedParser = bodyParser.urlencoded({
 })
 const multer = require('multer')
 const {jiemi} = require('../utils/index')
+const {createToken,verifyToken} = require('../utils/jwt')
 const fs = require('fs')
 const {getCwBycwid,updateMsg,insertMsg,getUserById,findUserByUserid,updateUserById,updateCw,getCwBase,getfidBycwid} = require('./handle')
 const mongoControl = require('../dbc').mongoControl
@@ -21,7 +22,7 @@ router.post('/login', urlencodedParser, (req, res) => {
     password,
     phoneNumber
   } = p
-
+  const userJwt = createToken('user')
   user.find({
     phoneNumber: phoneNumber,
     password: password
@@ -39,7 +40,8 @@ router.post('/login', urlencodedParser, (req, res) => {
       res.send({
         code: 'ok',
         status: 0,
-        data: date
+        data: date,
+        token:userJwt
       })
     }
   })
@@ -49,6 +51,11 @@ router.get('/getCwBaseInfo', async (req, res) => {
   let {
     id
   } = req.query
+  const {info} = await verifyToken(req.headers.authorization)
+  if(info!=='user'){
+    res.cc('token携带错误')
+    return 
+  }
   if (!id) {
     res.cc('id不存在出现错误')
   } else {

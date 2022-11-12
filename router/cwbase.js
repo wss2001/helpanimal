@@ -12,7 +12,8 @@ const {
   deleteCw,
   getUseridBycw,
   getfidBycwid,
-  getbrotheridByfid
+  getBaseById,
+  updateCwBase
 } = require('../router/handle')
 const {jiemi} = require('../utils/index')
 const mongoControl = require('../dbc').mongoControl
@@ -44,20 +45,26 @@ router.get('/getCwBaseInfo', async (req, res) => {
   try {
     let cwArr = await getBaseCwArr(id)
     // 并发读取远程URL
-    const textPromises = cwArr.map(async item => {
-      const response = await new Promise((resolve, reject) => {
-        cw.findById(item, (err, date) => {
-          if (err) reject(err)
-          resolve(date)
+      const textPromises = cwArr.map(async item => {
+        const response = await new Promise((resolve, reject) => {
+          cw.findById(item, (err, date) => {
+            if (err) reject(err)
+            else{
+              resolve(date)
+            }
+          })
         })
-      })
-      return response;
-    });
+        return response;
+      });
     let b = []
     for (const textPromise of textPromises) {
-      let a = await textPromise
+      try {
+        let a = await textPromise
       if (a[0] !== undefined) {
         b.push(a[0])
+      }
+      } catch (error) {
+        console.error(error)
       }
     }
     res.send({
@@ -67,7 +74,7 @@ router.get('/getCwBaseInfo', async (req, res) => {
       data: b,
     })
   } catch (error) {
-    console.error(error)
+    console.error('ss')
     res.cc('根据基地id获取宠物数据失败！')
   }
 })
@@ -234,6 +241,20 @@ router.post('/getmoney',urlencodedParser,async(req,res)=>{
     }
   })
 })
-
+//更新热度
+router.post('/updateHot',urlencodedParser,async(req,res)=>{
+  let id = req.body.id;
+  const cwbase = await getBaseById(id)
+  if(cwbase){
+    let hot = cwbase.hot;
+    const result = await updateCwBase(id,{hot:hot+1})
+    if(result){
+      res.send({
+        status:200,
+        data:'ok'
+      })
+    }
+  }
+})
 //这里得这么导出
 module.exports = router
