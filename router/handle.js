@@ -331,7 +331,7 @@ exports.getNews = async ()=>{
  * @param {*} id 
  * @param {*} type 
  * @param {*} obj 
- * @returns 
+ * @returns boolean
  */
 exports.updateUserById = async (id,obj)=>{
   try {
@@ -494,7 +494,7 @@ exports.updateCw = async (id,obj)=>{
 /**
  * @description 根据用户id获取其集合
  * @param {*} id 
- * @returns 
+ * @returns User
  */
 exports.getUserById = async (id)=>{
   try {

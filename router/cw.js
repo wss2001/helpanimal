@@ -49,6 +49,31 @@ router.get('/getbrother',async (req,res)=>{
     res.cc('没找到')
   }
 })
+//查找基地信息
+router.get('/fBase',async (req,res)=>{
+  let cwid = req.query.id;
+  try {
+    let fid = await getfidBycwid(cwid)
+  if(fid){
+    cwBase.findById(fid,(err,date)=>{
+      if(err){
+        res.cc(err)
+      }else{
+        res.send({
+          code:'ok',
+          status:200,
+          data:date[0]
+        })
+      }
+    })
+  }else{
+    res.cc('not find')
+  }
+  } catch (error) {
+    res.cc('没找到')
+  }
+})
+
 router.get('/updatefood',async(req,res)=>{
   const cwid = req.query.id;
   try {
@@ -70,6 +95,8 @@ router.get('/updatefood',async(req,res)=>{
         status:200,
         data:'update cw food ok'
       })
+    }else{
+      res.cc('update cw food false')
     }
   } catch (error) {
     res.cc('更新宠物天数失败')

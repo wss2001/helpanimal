@@ -1,27 +1,34 @@
 // const {
 //   getUserCwArr
 // } = require('./router/handle')
-
+const {jiami,jiemi} = require('./utils/index')
+const {verifyToken,createToken} = require('./utils/jwt')
+const a = createToken('3232')
+console.log(a)
+verifyToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvIjoiMzIzMiIsImlhdCI6MTY2ODMzOTIyNywiZXhwIjoxNjY4MzM5MjMzfQ.AYLRn_mHUF4XiVbHZ7BwBfx1YENNnYs2_LreVGMx_dM').then((res)=>{
+  console.log(res)
+})
+// console.log(a,b)
 // const test = async ()=>{
 //   let result = await getUserCwArr('6281f55599612244d8d3f77d')
 //   console.log(result)
 // }
 // test()
-const moment = require('moment')
-const url=require('url')
+// const moment = require('moment')
+// const url=require('url')
 
-const mongoControl = require('./dbc').mongoControl
-// // 领养者
-var comment = new mongoControl('animal', 'comment')
-var news = new mongoControl('animal', 'news')
-var msg = new mongoControl('animal', 'userMsg')
-// msg.delete({state:'tw'},()=>{})
-let s = '%E5%B0%8F%E5%88%98'
-let ss = 'nickname=%E5%B0%8F%E5%88%98&gender=%E7%94%B7&email=12345%40qq.com&password=xiaoliu'
-// s.replace(/%/g,'%25')
-var str  = decodeURIComponent(s)
+// const mongoControl = require('./dbc').mongoControl
+// // // 领养者
+// var comment = new mongoControl('animal', 'comment')
+// var news = new mongoControl('animal', 'news')
+// var msg = new mongoControl('animal', 'userMsg')
+// // msg.delete({state:'tw'},()=>{})
+// let s = '%E5%B0%8F%E5%88%98'
+// let ss = 'nickname=%E5%B0%8F%E5%88%98&gender=%E7%94%B7&email=12345%40qq.com&password=xiaoliu'
+// // s.replace(/%/g,'%25')
+// var str  = decodeURIComponent(s)
 
-console.log(str)
+// console.log(str)
 // const updateUserById = async (id,obj)=>{
 //   try {
 //     let result = await new Promise((resolve,reject)=>{

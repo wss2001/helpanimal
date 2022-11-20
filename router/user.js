@@ -16,12 +16,12 @@ const Msg = new mongoControl('animal', 'userMsg')
 // 用户模块
 // 登录
 router.post('/login', urlencodedParser, (req, res) => {
-  let k = req.body.form
-  let p = JSON.parse(jiemi(k))
   let {
     password,
     phoneNumber
-  } = p
+  } = req.body.form
+  password = jiemi(password)
+  phoneNumber = jiemi(phoneNumber)
   const userJwt = createToken('user')
   user.find({
     phoneNumber: phoneNumber,
@@ -51,11 +51,12 @@ router.get('/getCwBaseInfo', async (req, res) => {
   let {
     id
   } = req.query
-  const {info} = await verifyToken(req.headers.authorization)
-  if(info!=='user'){
-    res.cc('token携带错误')
-    return 
-  }
+  // const {info} = await verifyToken(req.headers.authorization)
+  // console.log(info)
+  // if(info!=='user'){
+  //   res.cc('token携带错误')
+  //   return 
+  // }
   if (!id) {
     res.cc('id不存在出现错误')
   } else {
@@ -134,27 +135,29 @@ router.get('/getUserMsg',(req,res)=>{
 
 // 注册
 router.post('/register', urlencodedParser, (req, res) => {
-  let cw = []
   let {
     pass,
     phoneNumber,
     username
   } = req.body.form
+  pass = jiemi(pass)
+  phoneNumber = jiemi(phoneNumber)
+  username = jiemi(username)
   user.insert([{
     password: pass,
     phoneNumber,
     username,
     shoucang:[],
     friends:[],
-    msg:[],
     info: {},
     img:'http://localhost:3007/public/img/cw1.jpg',
-    cw: cw
+    cw: []
   }], (err, date) => {
     if (err) {
       res.cc('发生错误')
       return
     } else {
+      const userJwt = createToken('user')
       res.cookie('userToken', date.insertedIds[0].toString(), {
         expires: new Date(Date.now() + 9000000)
       })
@@ -163,6 +166,7 @@ router.post('/register', urlencodedParser, (req, res) => {
         status: 0,
         message: '获取用户数据成功！',
         data: date,
+        token:userJwt
       })
     }
   })
@@ -530,5 +534,46 @@ router.post('/getcertificate',urlencodedParser,async(req,res)=>{
     res.cc([])
   }
 })
-
+//找回密码
+router.post('/findpass',urlencodedParser,(req,res)=>{
+  const {} = req.body;
+  user.find({},(err,date)=>{
+    if(err ||!date[0]){
+      res.cc('find false')
+    }else{
+      res.send({
+        status:200,
+        data:date[0]
+      })
+    }
+  })
+})
+//更改密码
+router.post('/changepass',urlencodedParser,async(req,res)=>{
+  const {id,oldpass,newpass} = JSON.parse(jiemi(req.body.form));
+  const obj = {password:newpass}
+  try {
+    const user = await getUserById(id)
+    if(user.password!==oldpass){
+      res.send({
+        status:403,
+        data:'pass not ture'
+      })
+      return
+    }
+    const result = await updateUserById(id,obj)
+  if(result){
+    res.send({
+      status:200,
+      data:'ok'
+    })
+  }
+  else{
+    res.cc('change false')
+  }
+  } catch (error) {
+    res.cc(error)
+  }
+  
+})
 module.exports = router
