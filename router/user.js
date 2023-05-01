@@ -550,9 +550,9 @@ router.post('/findpass',urlencodedParser,(req,res)=>{
 })
 //更改密码
 router.post('/changepass',urlencodedParser,async(req,res)=>{
-  const {id,oldpass,newpass} = JSON.parse(jiemi(req.body.form));
-  const obj = {password:newpass}
   try {
+    const {id,oldpass,newpass} = JSON.parse(jiemi(req.body.form));
+    const obj = {password:newpass}
     const user = await getUserById(id)
     if(user.password!==oldpass){
       res.send({

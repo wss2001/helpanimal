@@ -32,8 +32,19 @@ router.get('/getcw', async (req, res) => {
   } catch (error) {
     res.cc(error)
   }
-  
 })
+// router.get('/getallcw', async (req, res) => {
+//   try {
+//     let result = await getCwBycwid(id)
+//     res.send({
+//       code:'ok',
+//     status:200,
+//     data:result
+//     })
+//   } catch (error) {
+//     res.cc(error)
+//   }
+// })
 router.get('/getbrother',async (req,res)=>{
   let cwid = req.query.id;
   try {

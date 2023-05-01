@@ -24,6 +24,7 @@ var user = new mongoControl('animal', 'user')
 const Msg = new mongoControl('animal', 'userMsg')
 var admin = new mongoControl('animal', 'admin')
 
+// 获取所有宠物基地信息
 router.get('/getbase', (req, res) => {
   cwBase.find({}, (err, data) => {
     if (err) {
@@ -37,6 +38,22 @@ router.get('/getbase', (req, res) => {
       })
     }
   })
+})
+// 根据id获取宠物基地信息
+router.get('/getbaseByid', async (req, res) => {
+  try {
+    let id = req.query.id;
+    const cwBase = await getBaseById(id)
+    res.send({
+      status:0,
+      data:cwBase
+    })
+  } catch (error) {
+    res.cc(err)
+  }
+ 
+
+
 })
 router.get('/getCwBaseInfo', async (req, res) => {
   let {
