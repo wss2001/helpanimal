@@ -97,10 +97,16 @@ router.get('/getpay', async (req, res) => {
     }
     if (state == 'sy') {
       const user = await getUserById(userid);
-      const cwArr = user.cwArr
+      const cwArr = user.cw
+     
       cwArr.push(cwid)
+      console.log('cwArr',cwArr)
       const r1 = await updateUserById(userid, {
-        cwArr: cwArr
+        cw: cwArr
+      })
+      const result = await updateCw(cwid, {
+        alsoFood: newFood,
+        state:true
       })
       const obj = {
         state:'sy',

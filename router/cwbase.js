@@ -9,12 +9,14 @@ const {
   getBaseCwArr,
   addcw,
   updatebasecwarr,
+  updateusercwarr,
   deleteCw,
   getUseridBycw,
   getfidBycwid,
   getBaseById,
   updateCwBase,
-  updateCw
+  updateCw,
+  getCwImgArr
 } = require('../router/handle')
 const {jiemi} = require('../utils/index')
 const mongoControl = require('../dbc').mongoControl
@@ -199,7 +201,8 @@ router.post('/addpet', urlencodedParser, async (req, res) => {
     intro,
     img,
     id,
-    birth
+    birth,
+    baseName
   } = req.body.form
   let cwPush = {
     name,
@@ -208,12 +211,13 @@ router.post('/addpet', urlencodedParser, async (req, res) => {
     lovePeople: '',
     lovePeopleUserName: '',
     state: false,
-    alsoFood: 0,
+    alsoFood: birth,
     img: img,
     imgArr: [img],
     fid: id,
     userid: '',
-    alsoFoodtian:0
+    alsoFoodtian:0,
+    cwBase:baseName
   }
   try {
     let [cwId, cwArr] = await Promise.all([addcw(cwPush), getBaseCwArr(id)])
@@ -294,6 +298,26 @@ router.post('/updatepet', urlencodedParser, async (req, res) => {
     res.send({
       status:200,
       message:'修改成功',
+      data:result
+    })
+  }else{
+    res.cc(result)
+  }
+
+})
+// 给宠物添加图片
+router.post('/updatepetImg', urlencodedParser, async (req, res) => {
+  let {
+    id,
+    imgUrl
+  } = req.body
+  let imgArr = await getCwImgArr(id)
+  imgArr.push(imgUrl)
+  const result = await updateCw(id,{imgArr})
+  if(result){
+    res.send({
+      status:200,
+      message:'添加图片成功',
       data:result
     })
   }else{

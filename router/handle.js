@@ -22,12 +22,28 @@ exports.getUserCwArr = async (userid) => {
   let result = await new Promise((resolve, reject) => {
     user.findById(userid, (err, date) => {
       if (err) reject(err)
-      resolve(date)
+      resolve(date[0].cw)
     })
   })
   return result
 }
-
+/**
+ * @description 通过宠物id获取宠物img数组
+ * @param {*} cwid 
+ * @returns 
+ */
+exports.getCwImgArr = async (cwid) => {
+  if(cwid==''){
+    return []
+  }
+  let result = await new Promise((resolve, reject) => {
+    cw.findById(cwid, (err, date) => {
+      if (err) reject(err)
+      resolve(date[0].imgArr)
+    })
+  })
+  return result
+}
 /**
  * @description 通过基地id获取用户宠物数组
  * @param {id} baseid 
@@ -37,7 +53,12 @@ exports.getBaseCwArr = async (baseid) => {
   let result = await new Promise((resolve, reject) => {
     cwBase.findById(baseid, (err, date) => {
       if (err) reject(err)
-      resolve(date[0].baseCw)
+      if(date[0].baseCw){
+        resolve(date[0].baseCw)
+      }else{
+        reject('通过基地id获取用户宠物数组失败')
+      }
+      
     })
   })
   return result

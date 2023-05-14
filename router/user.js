@@ -50,14 +50,9 @@ router.post('/login', urlencodedParser, (req, res) => {
 
 router.get('/getCwBaseInfo', async (req, res) => {
   let {
-    id
+    id,
+    state
   } = req.query
-  // const {info} = await verifyToken(req.headers.authorization)
-  // console.log(info)
-  // if(info!=='user'){
-  //   res.cc('token携带错误')
-  //   return 
-  // }
   if (!id) {
     res.cc('id不存在出现错误')
   } else {
@@ -73,7 +68,12 @@ router.get('/getCwBaseInfo', async (req, res) => {
       console.log(error)
       res.cc(error)
     }
-    let cwArr = cc[0].cw
+    let cwArr
+    if(state!='cw'){
+      cwArr= cc[0].shoucang
+    }else{
+      cwArr= cc[0].cw
+    }
     let lastArr = []
       for (let i = 0; i < cwArr.length; i++) {
         //trycatch在for循环里将捕获的错误不进行push，避免了id错误时，获取不到宠物信息所产生的错误
@@ -439,7 +439,9 @@ router.get('/getfriendshare',(req,res)=>{
 })
 //同意转增请求
 router.post('/agreezz',urlencodedParser,async(req,res)=>{
+
   let {myid,userid,_id,cwid} = req.body.form;
+  console.log('==',myid,userid,_id,cwid)
   try {
     let myuserobj = await getUserById(myid);
     let otheruserobj = await getUserById(userid)
