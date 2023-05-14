@@ -1,23 +1,7 @@
 'use strict'
-
-
 var http = require('http');
-
-
 var express = require('express');
-
-// var serveIndex = require('serve-index');
-
-
-
 var app = express();
-
-
-// app.use(serveIndex('./dist'));
-// app.use(express.static('./dist'));
-
-
-
 var http_server = http.createServer(app);
 http_server.listen(3003);
 
@@ -49,7 +33,8 @@ io.on('connection', (socket)=>{
 	});
 
 	socket.on('usersend',(room,data)=>{
-		console.log('room, data',room, data)
+		console.log('usersendroom, data',room, data)
+    socket.join(room);
 		if(data ===  undefined){
 			return;
 		}

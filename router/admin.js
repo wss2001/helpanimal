@@ -142,12 +142,13 @@ router.post('/agree', urlencodedParser, async (req, res) => {
         phoneNumber: Msg.phone,
         pass: Msg.pass,
         intro: Msg.intro,
-        baseName: "",
+        baseName: Msg.baseName,
         address: '',
         img: '',
         baseCw: [],
         PeopleName: '',
-        income: ''
+        income: '',
+        hot:1
       }], (err, date) => {
         if (err) {
           res.cc('同意失败')

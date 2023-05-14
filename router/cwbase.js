@@ -13,7 +13,8 @@ const {
   getUseridBycw,
   getfidBycwid,
   getBaseById,
-  updateCwBase
+  updateCwBase,
+  updateCw
 } = require('../router/handle')
 const {jiemi} = require('../utils/index')
 const mongoControl = require('../dbc').mongoControl
@@ -49,12 +50,13 @@ router.get('/getbaseByid', async (req, res) => {
       data:cwBase
     })
   } catch (error) {
-    res.cc(err)
+    res.cc(error)
   }
  
 
 
 })
+//获取宠物基地的宠物信息
 router.get('/getCwBaseInfo', async (req, res) => {
   let {
     id
@@ -94,6 +96,70 @@ router.get('/getCwBaseInfo', async (req, res) => {
     console.error('ss')
     res.cc('根据基地id获取宠物数据失败！')
   }
+})
+// 根据查询条件/获取基地的宠物列表
+router.post('/postCwBaseInfo',urlencodedParser, async (req, res) => {
+  let {
+    id
+  } = req.query
+  let {name,state}  =req.body
+  try {
+    let cwArr = await getBaseCwArr(id)
+    // 并发读取远程URL
+      const textPromises = cwArr.map(async item => {
+        const response = await new Promise((resolve, reject) => {
+          cw.findById(item, (err, date) => {
+            if (err) reject(err)
+            else{
+              resolve(date)
+            }
+          })
+        })
+        return response;
+      });
+    let b = []
+    for (const textPromise of textPromises) {
+      try {
+        let a = await textPromise
+      if (a[0] !== undefined) {
+        b.push(a[0])
+      }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    if(state!==''){
+      b = b.filter(item=>item.state==state)
+    }
+    if(name!==''){
+      b = b.filter(item=>item.name==name)
+    }
+    res.send({
+      code: 'ok',
+      status: 0,
+      message: '获取宠物基地详细数据成功！',
+      data: b,
+    })
+  } catch (error) {
+    console.error('ss')
+    res.cc('根据基地id获取宠物数据失败！')
+  }
+})
+// 修改宠物基地自身信息
+router.post('/changeBaseInfo',urlencodedParser,async (req,res)=>{
+  let {id,baseName,address,intro,img,PeopleName} = req.body
+  cwBase.updateById(id,{baseName,address,intro,img,PeopleName},(err,data)=>{
+    if(err){
+      res.cc('err')
+    }else{
+      res.send({
+        code: 'ok',
+        status: 200,
+        message: '修改宠物基地管理数据成功！',
+        data: data,
+      })
+    }
+  })
 })
 
 router.post('/login', urlencodedParser, (req, res) => {
@@ -147,6 +213,7 @@ router.post('/addpet', urlencodedParser, async (req, res) => {
     imgArr: [img],
     fid: id,
     userid: '',
+    alsoFoodtian:0
   }
   try {
     let [cwId, cwArr] = await Promise.all([addcw(cwPush), getBaseCwArr(id)])
@@ -189,7 +256,7 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
       let a = await updatebasecwarr(baseid, newBaseCwArr)
       res.send({
         code: 'delete pet ok',
-        status: 1,
+        status: 200,
         message: '删除宠物成功',
         data: [result]
       })
@@ -214,11 +281,24 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
 })
 
 //修改宠物信息
-router.post('/updatepet', urlencodedParser, (req, res) => {
+router.post('/updatepet', urlencodedParser, async (req, res) => {
   let {
     id,
     name,
-  } = req.body.form
+    intro,
+    img,
+    birth
+  } = req.body
+  const result = await updateCw(id,{name,intro,img,birth})
+  if(result){
+    res.send({
+      status:200,
+      message:'修改成功',
+      data:result
+    })
+  }else{
+    res.cc(result)
+  }
 
 })
 
@@ -226,12 +306,14 @@ router.post('/updatepet', urlencodedParser, (req, res) => {
 router.post('/register', urlencodedParser, (req, res) => {
   let {
     phoneNumber,
-    pass
+    pass,
+    baseName
   } = req.body.form
   admin.insert([{
     code: 1,
     phoneNumber,
-    pass
+    pass,
+    baseName
   }], (err, date) => {
     if (err) {
       res.cc(err)

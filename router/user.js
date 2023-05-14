@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const bodyParser = require('body-parser')
+var mailer = require('../utils/sendMail');
 const urlencodedParser = bodyParser.urlencoded({
   extended: false
 })
@@ -138,11 +139,13 @@ router.post('/register', urlencodedParser, (req, res) => {
   let {
     pass,
     phoneNumber,
-    username
+    username,
+    email
   } = req.body.form
   pass = jiemi(pass)
   phoneNumber = jiemi(phoneNumber)
   username = jiemi(username)
+  email = jiemi(email)
   user.insert([{
     password: pass,
     phoneNumber,
@@ -151,7 +154,8 @@ router.post('/register', urlencodedParser, (req, res) => {
     friends:[],
     info: {},
     img:'http://localhost:3007/public/img/cw1.jpg',
-    cw: []
+    cw: [],
+    email
   }], (err, date) => {
     if (err) {
       res.cc('发生错误')
@@ -187,7 +191,7 @@ router.post('/addjpg', multer({
   fileInfo.name = file.originalname;
   fileInfo.size = file.size;
   fileInfo.path = path;
-  fileInfo.url = `http://localhost:3007/${path}`
+  fileInfo.url = `http://127.0.0.1:3007/${path}`
   // console.log(fileInfo)
   res.json({
     code: 0,
@@ -392,7 +396,7 @@ router.get('/getfriendrequest',(req,res)=>{
     }
   })
 })
-//发送好友转增请求
+//发启好友转增请求
 router.post('/findshare',urlencodedParser,async(req,res)=>{
   const {userid,myid,cwid} = req.body.form;
   try {
@@ -534,20 +538,66 @@ router.post('/getcertificate',urlencodedParser,async(req,res)=>{
     res.cc([])
   }
 })
-//找回密码
-router.post('/findpass',urlencodedParser,(req,res)=>{
-  const {} = req.body;
-  user.find({},(err,date)=>{
-    if(err ||!date[0]){
-      res.cc('find false')
+
+//找回密码通过邮箱更改密码
+let userCode = 0
+let timer
+router.post('/findChangePass',urlencodedParser,(req,res)=>{
+  const {code,email,newPass} = req.body;
+  code = jiemi(code)
+  email = jiemi(email)
+  newPass = jiemi(newPass)
+
+  if(code!==userCode){
+    res.cc('验证码过期')
+    return 
+  }
+  user.update({email},{password:newPass},(err,data)=>{
+    if(err){
+      res.cc('change false')
     }else{
       res.send({
         status:200,
-        data:date[0]
+        data:data
       })
+      clearInterval(timer)
     }
   })
 })
+
+router.post("/sendEmail",urlencodedParser, async (req, res)=> {
+  try {
+    var code = '';
+    for(var i=0;i<6;i++){
+        code += parseInt(Math.random()*10);
+    }
+    timer = setInterval(()=>{
+      console.log('userCode',userCode)
+      if(userCode!==0){
+        userCode = 0
+        // console.log('====')
+      }
+    },600000)
+    userCode = code
+    var email = req.body.email;
+    var subject = "这是验证码请查收";//标题
+    var text = undefined;
+    var html = `<h2>你好</h2><p>这是你的验证码: ${code}</p>十分钟内有效</p>`;
+
+    mailer.emailTo(email, subject, text, html, function (data) {
+      console.log('data',data)
+      res.send({
+        status:data.httpCode,
+        data:data
+      })
+      
+    })
+  } catch (error) {
+    res.cc(error)
+  }
+  
+})
+
 //更改密码
 router.post('/changepass',urlencodedParser,async(req,res)=>{
   try {
