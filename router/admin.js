@@ -147,7 +147,7 @@ router.post('/agree', urlencodedParser, async (req, res) => {
         img: '',
         baseCw: [],
         PeopleName: '',
-        income: '',
+        income: 0,
         hot:1
       }], (err, date) => {
         if (err) {
@@ -199,6 +199,7 @@ router.post('/removecwbase', urlencodedParser, async (req, res) => {
         await deleteCw(cwArr[i])
       } catch (error) {
         console.log('根据宠物id删除宠物失败',cwArr[i])
+        res.cc('删除宠物基地失败')
       }
     }
     cwBase.deleteById(id,(err,date)=>{

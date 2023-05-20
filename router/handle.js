@@ -116,7 +116,12 @@ exports.getUseridBycw = async (cwid) => {
         if (err) {
           reject('通过宠物id获取用户id失败')
         }
-        resolve(date[0].userid)
+        if(date[0]){
+          resolve(date[0].userid)
+        }else{
+          resolve('')
+        }
+        
       })
     })
     return result
@@ -238,11 +243,15 @@ exports.getbrotheridByfid = async (fid,cwid)=>{
           }
           if(cwArrLength==0){
             resolve('')
-          }else{
+          }else if(cwArrLength ==1){
+            resolve(date[0].baseCw[0])
+          }
+          else{
             let othercwidnum = RandomNumBoth(0,cwArrLength-1)
             let othercwid = date[0].baseCw[othercwidnum]
             while(othercwid==cwid){
               othercwidnum = RandomNumBoth(0,cwArrLength-1)
+              othercwid = date[0].baseCw[othercwidnum]
             }
           resolve(othercwid)
           }

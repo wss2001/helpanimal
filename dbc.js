@@ -8,6 +8,7 @@ class mongoControl {
     this.dbName = dbName
     this.collectionName = collectionName
   }
+  // 搜索
   find(whereStr, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) {
@@ -21,6 +22,7 @@ class mongoControl {
       })
     })
   }
+  // 排序
   sort(type, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) {
@@ -35,6 +37,7 @@ class mongoControl {
       })
     })
   }
+  // 插入
   insert(docs, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) throw error
@@ -45,6 +48,7 @@ class mongoControl {
       })
     })
   }
+  // 更改
   update(whereStr, newData, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) throw error
@@ -57,6 +61,7 @@ class mongoControl {
       })
     })
   }
+  // 删除
   delete(whereStr, callback) {
     MongoClient.connect(url, (error, db) => {
       if (error) throw error

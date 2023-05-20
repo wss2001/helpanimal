@@ -155,7 +155,9 @@ router.post('/register', urlencodedParser, (req, res) => {
     info: {},
     img:'http://localhost:3007/public/img/cw1.jpg',
     cw: [],
-    email
+    email,
+    desc:'简介',
+    sex:'男'
   }], (err, date) => {
     if (err) {
       res.cc('发生错误')
@@ -545,7 +547,7 @@ router.post('/getcertificate',urlencodedParser,async(req,res)=>{
 let userCode = 0
 let timer
 router.post('/findChangePass',urlencodedParser,(req,res)=>{
-  const {code,email,newPass} = req.body;
+  let {code,email,newPass} = req.body;
   code = jiemi(code)
   email = jiemi(email)
   newPass = jiemi(newPass)
@@ -569,19 +571,36 @@ router.post('/findChangePass',urlencodedParser,(req,res)=>{
 
 router.post("/sendEmail",urlencodedParser, async (req, res)=> {
   try {
+  const {email,phoneNumber} = req.body;
+  let userEmail = await new Promise((resolve, reject) => {
+    user.find({phoneNumber:phoneNumber}, (err, date) => {
+      if (err) reject(err)
+      if(date[0]){
+        resolve(date[0].email)
+      }else{
+        resolve('')
+      }
+    })
+  })
+  if(email!=userEmail){
+    res.send({status:400,data:'邮箱不符'})
+    return
+  }
     var code = '';
     for(var i=0;i<6;i++){
         code += parseInt(Math.random()*10);
     }
+    
     timer = setInterval(()=>{
-      console.log('userCode',userCode)
+      console.log('setInterval')
       if(userCode!==0){
         userCode = 0
         // console.log('====')
       }
     },600000)
     userCode = code
-    var email = req.body.email;
+    console.log('userCode',userCode)
+    // var email = req.body.email;
     var subject = "这是验证码请查收";//标题
     var text = undefined;
     var html = `<h2>你好</h2><p>这是你的验证码: ${code}</p>十分钟内有效</p>`;
@@ -614,6 +633,25 @@ router.post('/changepass',urlencodedParser,async(req,res)=>{
       return
     }
     const result = await updateUserById(id,obj)
+  if(result){
+    res.send({
+      status:200,
+      data:'ok'
+    })
+  }
+  else{
+    res.cc('change false')
+  }
+  } catch (error) {
+    res.cc(error)
+  }
+  
+})
+// 更改用户信息
+router.post('/changeInfo',urlencodedParser,async(req,res)=>{
+  try {
+    const {id,desc,sex} = req.body;
+    const result = await updateUserById(id,{desc,sex})
   if(result){
     res.send({
       status:200,

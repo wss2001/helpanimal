@@ -163,7 +163,22 @@ router.post('/changeBaseInfo',urlencodedParser,async (req,res)=>{
     }
   })
 })
-
+// 修改宠物基地获得利益
+router.post('/changeBaseTotal',urlencodedParser,async (req,res)=>{
+  let {id,income} = req.body
+  cwBase.updateById(id,{income},(err,data)=>{
+    if(err){
+      res.cc('err')
+    }else{
+      res.send({
+        code: 'ok',
+        status: 200,
+        message: '修改宠物基地管理获得利益成功！',
+        data: data,
+      })
+    }
+  })
+})
 router.post('/login', urlencodedParser, (req, res) => {
   let k = req.body.form
   let p = JSON.parse(jiemi(k))
@@ -252,7 +267,8 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
   // console.log(baseid, cwId);
   try {
     //删除宠物obj
-    let [result, cwArr, userid] = await Promise.all([deleteCw(cwId), getBaseCwArr(baseid), getUseridBycw(cwId)])
+    let userid = await getUseridBycw(cwId)
+    let [result, cwArr] = await Promise.all([deleteCw(cwId), getBaseCwArr(baseid)])
     console.log(result, cwArr, userid)
     console.log('=====')
     let newBaseCwArr = cwArr.filter(item => item !== cwId)
@@ -270,6 +286,7 @@ router.post('/removePet', urlencodedParser, async (req, res) => {
 
       console.log(newBaseCwArr);
       let [a, b] = await Promise.all([updateusercwarr(userid, newUserCwArr), updatebasecwarr(baseid, newBaseCwArr)])
+      
       res.send({
         code: 'delete pet ok',
         status: 1,
